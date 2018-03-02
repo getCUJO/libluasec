@@ -81,6 +81,11 @@ local function tcp(params)
    return function ()
       local conn = {}
       conn.sock = try(socket.tcp())
+
+      if params.source_address then
+         try(conn.sock:bind(params.source_address, params.source_port or 0))
+      end
+
       local st = getmetatable(conn.sock).__index.settimeout
       function conn:settimeout(...)
          return st(self.sock, ...)
