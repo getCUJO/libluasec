@@ -577,7 +577,7 @@ static int meth_getpeerverification(lua_State *L)
 {
   long err;
   p_ssl ssl = (p_ssl)luaL_checkudata(L, 1, "SSL:Connection");
-  if (ssl->state != LSEC_STATE_CONNECTED) {
+  if (ssl->state == LSEC_STATE_CLOSED) {
     lua_pushboolean(L, 0);
     lua_pushstring(L, "closed");
     return 2;
