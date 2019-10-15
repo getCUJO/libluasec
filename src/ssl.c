@@ -752,6 +752,20 @@ static int meth_sni(lua_State *L)
   if (pctx->mode == LSEC_MODE_CLIENT) {
     name = luaL_checkstring(L, 2);
     SSL_set_tlsext_host_name(ssl->ssl, name);
+
+#ifdef X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
+    /* Validate the hostname against the certificate. */
+
+    /* This is only available in OpenSSL >= 1.0.2, hence the ifdef. (Really */
+    /* we're interested in X509_VERIFY_PARAM_set1_host, more than the flag, */
+    /* but both were introduced in the same release.) On older versions the */
+    /* functionality would have to be implemented fully manually. */
+    X509_VERIFY_PARAM *param = SSL_get0_param(ssl->ssl);
+    X509_VERIFY_PARAM_set_hostflags(param,
+      X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+    X509_VERIFY_PARAM_set1_host(param, name, 0);
+#endif
+
     return 0;
   } else if (pctx->mode == LSEC_MODE_SERVER) {
     luaL_checktype(L, 2, LUA_TTABLE);
